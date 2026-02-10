@@ -1,109 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My page</title>
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      width: 100%;
-      border: none;
-    }
-    
-    .container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    
-    .header {
-      background-color: #333;
-      color: white;
-      padding: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-    
-    .content {
-      flex: 1;
-      overflow: auto;
-      background-color: #f5f5f5;
-    }
-    
-    .status {
-      text-align: center;
-      padding: 40px 20px;
-      color: #666;
-      font-size: 16px;
-    }
-    
-    .error {
-      color: #d32f2f;
-      background-color: #ffebee;
-      padding: 20px;
-      border-radius: 4px;
-      margin: 20px;
-    }
-    
-    .success {
-      color: #388e3c;
-      background-color: #e8f5e9;
-      padding: 20px;
-      border-radius: 4px;
-      margin: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Content Display</title>
+    <script>
+        async function fetchRemoteContent() {
+            // Using a CORS proxy to fetch the content
+            const response = await fetch('https://cors-anywhere.herokuapp.com/http://147.163.133.120:9636');
+            const html = await response.text();
+            document.getElementById('contentArea').innerHTML = html;
+        }
+        window.onload = fetchRemoteContent;
+    </script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Remote Content Viewer</h1>
-    </div>
-    <div class="content">
-      <div id="result" class="status">
-        <p>Loading content from 147.163.133.120:9636...</p>
-      </div>
-    </div>
-  </div>
-  
-  <script>
-    // Try multiple CORS proxy services
-    const proxies = [
-      'https://cors-anywhere.herokuapp.com/',
-      'https://api.allorigins.win/raw?url=',
-      'https://corsproxy.io/?'
-    ];
-    
-    const targetUrl = 'http://147.163.133.120:9636';
-    let proxyIndex = 0;
-    
-    function tryLoadWithProxy() {
-      if (proxyIndex >= proxies.length) {
-        document.getElementById('result').innerHTML = '<div class="error"><strong>Error:</strong> Could not load content from the remote server.<br><br>Possible reasons:<ul style="text-align: left; display: inline-block;"><li>Server is not accessible from the internet</li><li>Server is blocking requests</li><li>Network connection issue</li></ul><br><strong>Try direct access:</strong> <a href="' + targetUrl + '" target="_blank">' + targetUrl + '</a></div>';
-        return;
-      }
-      
-      const proxy = proxies[proxyIndex];
-      const proxyUrl = proxy + targetUrl;
-      
-      document.getElementById('result').innerHTML = '<p>Attempting connection (proxy ' + (proxyIndex + 1) + ')...</p>';
-      
-      fetch(proxyUrl)
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById('result').innerHTML = '<div class="success"><strong>✓ Connected!</strong><br>' + data.substring(0, 500) + '...</div>';
-        })
-        .catch(error => {
-          proxyIndex++;
-          tryLoadWithProxy();
-        });
-    }
-    
-    tryLoadWithProxy();
-  </script>
+    <div id="contentArea">Loading...</div>
 </body>
 </html>
