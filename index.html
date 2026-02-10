@@ -30,28 +30,31 @@
     
     .content {
       flex: 1;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      overflow: auto;
       background-color: #f5f5f5;
     }
     
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    
-    .error-message {
+    .status {
       text-align: center;
+      padding: 40px 20px;
       color: #666;
-      padding: 20px;
+      font-size: 16px;
     }
     
-    .error-message p {
-      margin: 10px 0;
-      font-size: 16px;
+    .error {
+      color: #d32f2f;
+      background-color: #ffebee;
+      padding: 20px;
+      border-radius: 4px;
+      margin: 20px;
+    }
+    
+    .success {
+      color: #388e3c;
+      background-color: #e8f5e9;
+      padding: 20px;
+      border-radius: 4px;
+      margin: 20px;
     }
   </style>
 </head>
@@ -61,25 +64,46 @@
       <h1>Remote Content Viewer</h1>
     </div>
     <div class="content">
-      <div id="loader" class="error-message">
+      <div id="result" class="status">
         <p>Loading content from 147.163.133.120:9636...</p>
-        <p style="font-size: 12px; color: #999;">If this message persists, the remote server may not be accessible.</p>
       </div>
-      <iframe id="myframe" src="http://147.163.133.120:9636" style="display:none;"></iframe>
     </div>
   </div>
   
   <script>
-    document.getElementById('myframe').onload = function() {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('myframe').style.display = 'block';
-    };
+    // Try multiple CORS proxy services
+    const proxies = [
+      'https://cors-anywhere.herokuapp.com/',
+      'https://api.allorigins.win/raw?url=',
+      'https://corsproxy.io/?'
+    ];
     
-    setTimeout(function() {
-      if(document.getElementById('myframe').style.display === 'none') {
-        document.getElementById('loader').innerHTML = '<p>⚠️ Could not load content from http://147.163.133.120:9636</p><p style="font-size: 12px; color: #999;">Check if the server is running and accessible from your network.</p>';
+    const targetUrl = 'http://147.163.133.120:9636';
+    let proxyIndex = 0;
+    
+    function tryLoadWithProxy() {
+      if (proxyIndex >= proxies.length) {
+        document.getElementById('result').innerHTML = '<div class="error"><strong>Error:</strong> Could not load content from the remote server.<br><br>Possible reasons:<ul style="text-align: left; display: inline-block;"><li>Server is not accessible from the internet</li><li>Server is blocking requests</li><li>Network connection issue</li></ul><br><strong>Try direct access:</strong> <a href="' + targetUrl + '" target="_blank">' + targetUrl + '</a></div>';
+        return;
       }
-    }, 5000);
+      
+      const proxy = proxies[proxyIndex];
+      const proxyUrl = proxy + targetUrl;
+      
+      document.getElementById('result').innerHTML = '<p>Attempting connection (proxy ' + (proxyIndex + 1) + ')...</p>';
+      
+      fetch(proxyUrl)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('result').innerHTML = '<div class="success"><strong>✓ Connected!</strong><br>' + data.substring(0, 500) + '...</div>';
+        })
+        .catch(error => {
+          proxyIndex++;
+          tryLoadWithProxy();
+        });
+    }
+    
+    tryLoadWithProxy();
   </script>
 </body>
 </html>
